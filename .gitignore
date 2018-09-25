@@ -5,3 +5,8 @@ tmp
 logs
 
 .github
+
+# Eclipse-specific stuff
+**/.project
+**/.classpath
+**/.settings
