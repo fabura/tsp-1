@@ -69,7 +69,6 @@ object Library {
   )
 
   val akka = Seq(
-    //    "com.typesafe.spark" %% "spark-actor" % Version.spark,
     "com.typesafe.akka" %% "akka-slf4j" % Version.akka,
     "com.typesafe.akka" %% "akka-stream" % Version.akka
   )
