@@ -26,6 +26,7 @@ import ru.itclover.tsp.core.Pattern.TsIdxExtractor
 import ru.itclover.tsp.core._
 import ru.itclover.tsp.core.io.{BasicDecoders, Decoder, Extractor, TimeExtractor}
 
+import scala.collection.parallel.{ForkJoinTaskSupport, ParSeq}
 import scala.language.higherKinds
 import scala.reflect.ClassTag
 
@@ -76,7 +77,7 @@ case class PatternsSearchJob[In, InKey, InItem](
 
     log.debug("incidentsFromPatterns started")
 
-    val mappers: Seq[PatternProcessor[In, S, Segment, Incident]] = patterns.map {
+    val mappers: ParSeq[PatternProcessor[In, S, Segment, Incident]] = patterns.map {
       case ((pattern, meta), rawP) =>
         val allForwardFields = forwardedFields ++ rawP.forwardedFields.map(id => (id, source.fieldToEKey(id)))
         val toIncidents = ToIncidentsMapper(
@@ -92,8 +93,14 @@ case class PatternsSearchJob[In, InKey, InItem](
           toIncidents.apply,
           source.conf.eventsMaxGapMs,
           source.emptyEvent
-        )(timeExtractor) //.asInstanceOf[StatefulFlatMapper[In, S, Incident]]
+        )(timeExtractor)
     }
+        .toBuffer
+        .par
+
+    // todo this is the temporal hack to run rules on few threads.
+    mappers.tasksupport = PatternsSearchJob.taskSupport
+
     val res = stream
       .assignAscendingTimestamps(timeExtractor(_).toMillis)
       .keyBy(source.partitioner)
@@ -120,6 +127,8 @@ object PatternsSearchJob {
 
   val log = Logger("PatternsSearchJob")
   def maxPartitionsParallelism = 8192
+
+  val taskSupport = new ForkJoinTaskSupport()
 
   def preparePatterns[E, S <: PState[Segment, S], EKey, EItem](
     rawPatterns: Seq[RawPattern],
