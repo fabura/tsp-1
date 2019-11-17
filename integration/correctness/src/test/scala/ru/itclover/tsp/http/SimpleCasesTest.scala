@@ -9,7 +9,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.scalatest.FlatSpec
 import org.testcontainers.containers.wait.strategy.Wait
-import ru.itclover.tsp.RowWithIdx
 import ru.itclover.tsp.core.RawPattern
 import ru.itclover.tsp.http.domain.input.FindPatternsRequest
 import ru.itclover.tsp.http.protocols.RoutesProtocols
