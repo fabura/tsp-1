@@ -20,7 +20,13 @@ import ru.itclover.tsp.utils.Files
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-class SimpleCasesTest extends FlatSpec with SqlMatchers with ScalatestRouteTest with HttpService with ForAllTestContainer with RoutesProtocols {
+class SimpleCasesTest
+    extends FlatSpec
+    with SqlMatchers
+    with ScalatestRouteTest
+    with HttpService
+    with ForAllTestContainer
+    with RoutesProtocols {
   implicit override val executionContext: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
   implicit override val streamEnvironment: StreamExecutionEnvironment =
     StreamExecutionEnvironment.createLocalEnvironment()
@@ -69,27 +75,27 @@ class SimpleCasesTest extends FlatSpec with SqlMatchers with ScalatestRouteTest 
   )
 
   val incidentsCount = Map(
-    1 -> 9,
-    2 -> 5,
-    3 -> 3,
-    4 -> 1,
-    5 -> 6,
-    6 -> 6,
-    7 -> 1,
-    8 -> 1,
-    9 -> 1,
+    1  -> 9,
+    2  -> 5,
+    3  -> 3,
+    4  -> 1,
+    5  -> 6,
+    6  -> 6,
+    7  -> 1,
+    8  -> 1,
+    9  -> 1,
     10 -> 1,
     11 -> 3,
     12 -> 2,
     13 -> 1,
     14 -> 3,
-    15 -> 1,
+    15 -> 1
   )
 
   val wideInputConf = JDBCInputConf(
     sourceId = 100,
     jdbcUrl = container.jdbcUrl,
-    query =  "SELECT * FROM `2te116u_tmy_test_simple_rules` ORDER BY ts",
+    query = "SELECT * FROM `2te116u_tmy_test_simple_rules` ORDER BY ts",
     driverName = container.driverName,
     datetimeField = 'ts,
     eventsMaxGapMs = 60000L,
@@ -101,18 +107,21 @@ class SimpleCasesTest extends FlatSpec with SqlMatchers with ScalatestRouteTest 
   val narrowInputConf = JDBCInputConf(
     sourceId = 200,
     jdbcUrl = container.jdbcUrl,
-    query =  "SELECT * FROM math_test ORDER BY dt",
+    query = "SELECT * FROM math_test ORDER BY dt",
     driverName = container.driverName,
     datetimeField = 'dt,
     eventsMaxGapMs = 60000L,
     defaultEventsGapMs = 1000L,
     chunkSizeMs = Some(900000L),
     partitionFields = Seq('loco_num, 'section, 'upload_id),
-    dataTransformation = Some(NarrowDataUnfolding('sensor_id, 'value_float, Map(), Some(1000))),
+    dataTransformation = Some(NarrowDataUnfolding('sensor_id, 'value_float, Map(), Some(1000)))
   )
 
-  val wideRowSchema = RowSchema('series_storage, 'from, 'to, ('app, 1), 'id, 'timestamp, 'context, wideInputConf.partitionFields)
-  val narrowRowSchema = RowSchema('series_storage, 'from, 'to, ('app, 2), 'id, 'timestamp, 'context, narrowInputConf.partitionFields)
+  val wideRowSchema =
+    RowSchema('series_storage, 'from, 'to, ('app, 1), 'id, 'timestamp, 'context, wideInputConf.partitionFields)
+
+  val narrowRowSchema =
+    RowSchema('series_storage, 'from, 'to, ('app, 2), 'id, 'timestamp, 'context, narrowInputConf.partitionFields)
 
   val wideOutputConf = JDBCOutputConf(
     "events_wide_test",
@@ -128,13 +137,16 @@ class SimpleCasesTest extends FlatSpec with SqlMatchers with ScalatestRouteTest 
     "ru.yandex.clickhouse.ClickHouseDriver"
   )
 
-
   override def afterStart(): Unit = {
     super.afterStart()
     Files.readResource("/sql/test/cases-narrow-schema-new.sql").mkString.split(";").foreach(container.executeUpdate)
     Files.readResource("/sql/test/cases-wide-schema-new.sql").mkString.split(";").foreach(container.executeUpdate)
-    container.executeUpdate(s"INSERT INTO math_test FORMAT CSV\n${Files.readResource("/sql/test/cases-narrow-new.csv").drop(1).mkString("\n")}")
-    container.executeUpdate(s"INSERT INTO `2te116u_tmy_test_simple_rules` FORMAT CSV\n${Files.readResource("/sql/test/cases-wide-new.csv").drop(1).mkString("\n")}")
+    container.executeUpdate(
+      s"INSERT INTO math_test FORMAT CSV\n${Files.readResource("/sql/test/cases-narrow-new.csv").drop(1).mkString("\n")}"
+    )
+    container.executeUpdate(
+      s"INSERT INTO `2te116u_tmy_test_simple_rules` FORMAT CSV\n${Files.readResource("/sql/test/cases-wide-new.csv").drop(1).mkString("\n")}"
+    )
     Files.readResource("/sql/test/cases-sinks-schema.sql").mkString.split(";").foreach(container.executeUpdate)
 
   }
@@ -146,33 +158,49 @@ class SimpleCasesTest extends FlatSpec with SqlMatchers with ScalatestRouteTest 
 
   "Cases 1-15" should "work in wide table" in {
     (1 to 15).foreach { id =>
-      Post("/streamJob/from-jdbc/to-jdbc/?run_async=0",
-        FindPatternsRequest(s"15wide_$id", wideInputConf, wideOutputConf, List(casesPatterns(id - 1)))) ~>
-        route ~> check {
+      Post(
+        "/streamJob/from-jdbc/to-jdbc/?run_async=0",
+        FindPatternsRequest(s"15wide_$id", wideInputConf, wideOutputConf, List(casesPatterns(id - 1)))
+      ) ~>
+      route ~> check {
         withClue(s"Pattern ID: $id") {
           status shouldEqual StatusCodes.OK
         }
-          //checkByQuery(List(List(id.toDouble, incidentsCount(id).toDouble)), s"SELECT $id, COUNT(*) FROM events_wide_test WHERE id = $id")
+        //checkByQuery(List(List(id.toDouble, incidentsCount(id).toDouble)), s"SELECT $id, COUNT(*) FROM events_wide_test WHERE id = $id")
       }
     }
-    checkByQuery(incidentsCount.map {
-      case (k, v) => List(k.toDouble, v.toDouble)
-    }.toList.sortBy(_.head), s"SELECT id, COUNT(*) FROM events_wide_test GROUP BY id ORDER BY id")
+    checkByQuery(
+      incidentsCount
+        .map {
+          case (k, v) => List(k.toDouble, v.toDouble)
+        }
+        .toList
+        .sortBy(_.head),
+      s"SELECT id, COUNT(*) FROM events_wide_test GROUP BY id ORDER BY id"
+    )
   }
 
   "Cases 1-15" should "work in narrow table" in {
     (1 to 15).foreach { id =>
-      Post("/streamJob/from-jdbc/to-jdbc/?run_async=0",
-        FindPatternsRequest(s"15narrow_$id", narrowInputConf, narrowOutputConf, List(casesPatterns(id - 1)))) ~>
-        route ~> check {
+      Post(
+        "/streamJob/from-jdbc/to-jdbc/?run_async=0",
+        FindPatternsRequest(s"15narrow_$id", narrowInputConf, narrowOutputConf, List(casesPatterns(id - 1)))
+      ) ~>
+      route ~> check {
         withClue(s"Pattern ID: $id") {
           status shouldEqual StatusCodes.OK
         }
         //checkByQuery(List(List(id.toDouble, incidentsCount(id).toDouble)), s"SELECT $id, COUNT(*) FROM events_narrow_test WHERE id = $id")
       }
     }
-    checkByQuery(incidentsCount.map {
-      case (k, v) => List(k.toDouble, v.toDouble)
-    }.toList.sortBy(_.head), s"SELECT id, COUNT(*) FROM events_narrow_test GROUP BY id ORDER BY id")
+    checkByQuery(
+      incidentsCount
+        .map {
+          case (k, v) => List(k.toDouble, v.toDouble)
+        }
+        .toList
+        .sortBy(_.head),
+      s"SELECT id, COUNT(*) FROM events_narrow_test GROUP BY id ORDER BY id"
+    )
   }
 }

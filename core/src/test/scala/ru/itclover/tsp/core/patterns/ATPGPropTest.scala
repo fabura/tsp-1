@@ -9,7 +9,6 @@ class ATPGPropTest extends FlatSpec with Matchers {
 
   it should "auto generate all patterns" in {
 
-    
 //todo actualize!
 //    // Checker property
 //    def checkAll(): Prop =

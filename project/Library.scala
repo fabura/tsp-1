@@ -71,6 +71,7 @@ object Library {
   val influx: Seq[ModuleID] = Seq(
     "org.influxdb" % "influxdb-java" % Version.influx
   )
+
   val clickhouse: Seq[ModuleID] = Seq(
     "ru.yandex.clickhouse" % "clickhouse-jdbc" % Version.clickhouse
   )
@@ -86,13 +87,13 @@ object Library {
   )
 
   val flink: Seq[ModuleID] = flinkCore ++ Seq(
-    "org.apache.flink" %% "flink-runtime-web" % Version.flink,
-    "org.apache.flink" %% "flink-streaming-scala" % Version.flink,
-    "org.apache.flink" % "flink-connector-kafka_2.12" % Version.flink,
-    "org.apache.flink" % "flink-jdbc_2.12" % Version.flink,
-    "org.apache.flink" % "flink-metrics-dropwizard" % Version.flink,
-    "org.apache.flink" % "flink-avro" % Version.flink
-  )
+      "org.apache.flink" %% "flink-runtime-web" % Version.flink,
+      "org.apache.flink" %% "flink-streaming-scala" % Version.flink,
+      "org.apache.flink" % "flink-connector-kafka_2.12" % Version.flink,
+      "org.apache.flink" % "flink-jdbc_2.12" % Version.flink,
+      "org.apache.flink" % "flink-metrics-dropwizard" % Version.flink,
+      "org.apache.flink" % "flink-avro" % Version.flink
+    )
 
   val akka: Seq[ModuleID] = Seq(
     "com.typesafe.akka" %% "akka-slf4j" % Version.akka,
@@ -128,7 +129,7 @@ object Library {
     "pl.project13.scala" %% "sbt-jmh" % Version.testContainers % Version.jmh
   )
 
-  val testContainers: Seq[ModuleID]= Seq(
+  val testContainers: Seq[ModuleID] = Seq(
     "com.dimafeng" %% "testcontainers-scala" % Version.testContainers % "test",
     "org.testcontainers" % "kafka" % Version.testContainersKafka % "test"
   )
@@ -157,6 +158,6 @@ object Library {
     "com.github.rdblue" % "brotli-codec" % Version.brotli
   )
 
-  val jol: Seq[ModuleID] = Seq("org.openjdk.jol" % "jol-core"% "0.9")
+  val jol: Seq[ModuleID] = Seq("org.openjdk.jol" % "jol-core" % "0.9")
 
 }

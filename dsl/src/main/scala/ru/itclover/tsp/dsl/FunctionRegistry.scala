@@ -31,7 +31,7 @@ case class FunctionRegistry(
   def ++(other: FunctionRegistry) = FunctionRegistry(functions ++ other.functions, reducers ++ other.reducers)
 }
 
-object DefaultFunctions extends LazyLogging{
+object DefaultFunctions extends LazyLogging {
 
   private def toResult[T](x: Any)(implicit ct: ClassTag[T]): Result[T] =
     x match {
@@ -52,7 +52,8 @@ object DefaultFunctions extends LazyLogging{
         Result.succ(v.toDouble.asInstanceOf[T]) // we know that T == Double
       case v: java.lang.Integer if (ct.runtimeClass eq classOf[Long]) || (ct.runtimeClass eq classOf[java.lang.Long]) =>
         Result.succ(v.toDouble.asInstanceOf[T]) // we know that T == Long
-      case v: java.lang.Integer if (ct.runtimeClass eq classOf[Double]) || (ct.runtimeClass eq classOf[java.lang.Double]) =>
+      case v: java.lang.Integer
+          if (ct.runtimeClass eq classOf[Double]) || (ct.runtimeClass eq classOf[java.lang.Double]) =>
         Result.succ(v.toDouble.asInstanceOf[T]) // we know that T == Double
       // TODO: maybe some other cases
       case _ =>
@@ -239,16 +240,16 @@ object DefaultFunctions extends LazyLogging{
           sym match {
 
             case 'and => Result.succ(l.and(x0, x1))
-            case 'or => Result.succ(l.or(x0, x1))
+            case 'or  => Result.succ(l.or(x0, x1))
             case 'xor => Result.succ(l.xor(x0, x1))
-            case 'eq => Result.succ(l.eq(x0, x1))
+            case 'eq  => Result.succ(l.eq(x0, x1))
             case 'neq => Result.succ(l.neq(x0, x1))
-            case _ => Result.fail
+            case _    => Result.fail
           }
         case (Succ(x0), Fail) =>
           sym match {
             case 'not => Result.succ(l.not(x0))
-            case _ => Result.fail
+            case _    => Result.fail
           }
         case _ => Result.fail
       }

@@ -7,15 +7,15 @@ import org.apache.arrow.vector.ipc.ArrowFileReader
 import org.apache.arrow.vector.types.pojo.Schema
 import org.scalatest.{Matchers, WordSpec}
 
-class ArrowOpsTest extends WordSpec with Matchers{
+class ArrowOpsTest extends WordSpec with Matchers {
 
   val testFiles: List[File] = new File(
     "flink/src/test/resources/arrow"
   ).listFiles()
-   .filter(_.isFile)
-   .toList
+    .filter(_.isFile)
+    .toList
 
-  "ArrowOps" should{
+  "ArrowOps" should {
 
     "retrieve schema and reader from file" in {
 
@@ -33,14 +33,14 @@ class ArrowOpsTest extends WordSpec with Matchers{
 
     "retrieve data" in {
 
-       testFiles.foreach(file => {
+      testFiles.foreach(file => {
 
-         val schemaAndReader = ArrowOps.retrieveSchemaAndReader(file, Integer.MAX_VALUE)
-         val rowData = ArrowOps.retrieveData(schemaAndReader)
+        val schemaAndReader = ArrowOps.retrieveSchemaAndReader(file, Integer.MAX_VALUE)
+        val rowData = ArrowOps.retrieveData(schemaAndReader)
 
-         rowData.head.getArity shouldBe 3
+        rowData.head.getArity shouldBe 3
 
-       })
+      })
 
     }
 

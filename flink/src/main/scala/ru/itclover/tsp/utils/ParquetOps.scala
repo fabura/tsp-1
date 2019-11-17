@@ -184,7 +184,7 @@ object ParquetOps {
 
         val row = new Row(objectsList.size)
 
-        for(i <- objectsList.indices){
+        for (i <- objectsList.indices) {
           row.setField(i, objectsList(i))
         }
 

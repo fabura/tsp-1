@@ -19,7 +19,12 @@ import ru.itclover.tsp.utils.Files
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-class NarrowTableTest extends FlatSpec with SqlMatchers with ScalatestRouteTest with HttpService with ForAllTestContainer {
+class NarrowTableTest
+    extends FlatSpec
+    with SqlMatchers
+    with ScalatestRouteTest
+    with HttpService
+    with ForAllTestContainer {
 
   implicit override val executionContext: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
   implicit override val streamEnvironment: StreamExecutionEnvironment =
@@ -90,7 +95,7 @@ class NarrowTableTest extends FlatSpec with SqlMatchers with ScalatestRouteTest 
 
   "Basic assertions and forwarded fields" should "work for wide dense table" in {
     Post("/streamJob/from-jdbc/to-jdbc/?run_async=0", FindPatternsRequest("1", inputConf, outputConf, basicAssertions)) ~>
-      route ~> check {
+    route ~> check {
       //status shouldEqual StatusCodes.OK
     }
   }

@@ -35,7 +35,9 @@ trait SqlMatchers extends Matchers {
     }
     val unfound = expectedValues.filter(!results.contains(_))
     val unexpected = results.filter(!expectedValues.contains(_))
-    withClue(s"Expected but not found: [${toStringRepresentation(unfound)}]; found [${toStringRepresentation(unexpected)}] instead") {
+    withClue(
+      s"Expected but not found: [${toStringRepresentation(unfound)}]; found [${toStringRepresentation(unexpected)}] instead"
+    ) {
       results should ===(expectedValues)
     }
   }
