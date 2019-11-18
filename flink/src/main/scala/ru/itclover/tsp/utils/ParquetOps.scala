@@ -20,7 +20,7 @@ object ParquetOps {
   /**
     *  Types mapping from Apache Parquet to Scala types
     */
-  def typesMap = Map(
+  private def typesMap = Map(
     PrimitiveType.PrimitiveTypeName.INT64   -> classOf[Long],
     PrimitiveType.PrimitiveTypeName.INT32   -> classOf[Int],
     PrimitiveType.PrimitiveTypeName.INT96   -> classOf[Array[Byte]],
@@ -47,22 +47,16 @@ object ParquetOps {
     val valueInfo = typesMap(input._1.getPrimitiveTypeName)
 
     valueInfo.getName match {
-
       case "long" => group.getLong(indices._1, indices._2)
       case "int"  => group.getInteger(indices._1, indices._2)
-
       //array of bytes
       case "[B" => group.getBinary(indices._1, indices._2).getBytes
-
       case "boolean"          => group.getBoolean(indices._1, indices._2)
       case "float"            => group.getFloat(indices._1, indices._2)
       case "double"           => group.getDouble(indices._1, indices._2)
       case "java.lang.String" => group.getString(indices._1, indices._2)
-
       case _ => throw new IllegalArgumentException(s"No mapper for type ${valueInfo.getName}")
-
     }
-
   }
 
   /**
@@ -79,7 +73,19 @@ object ParquetOps {
     val schema = reader.getFooter.getFileMetaData.getSchema
 
     (schema, reader)
+  }
 
+  /**
+    * Get schema and reader from bytes array
+    * @param input byte array to get schema and reader
+    * @return tuple with parquet schema and reader
+    */
+  def retrieveSchemaAndReader(input: Array[Byte]): (MessageType, ParquetFileReader) = {
+
+    val reader = ParquetFileReader.open(new ParquetStream(input))
+    val schema = reader.getFooter.getFileMetaData.getSchema
+
+    (schema, reader)
   }
 
   /**
@@ -107,7 +113,7 @@ object ParquetOps {
     * @param reader apache parquet reader
     * @return list of parquet groups
     */
-  def getParquetGroups(schema: MessageType, reader: ParquetFileReader): mutable.ListBuffer[SimpleGroup] = {
+  def getParquetGroups(schema: MessageType, reader: ParquetFileReader): Seq[SimpleGroup] = {
 
     val groups: mutable.ListBuffer[SimpleGroup] = mutable.ListBuffer.empty
     var pages = reader.readNextRowGroup()
@@ -136,10 +142,10 @@ object ParquetOps {
     * @param input parquet schema and reader
     * @return flink rows
     */
-  def retrieveData(input: (MessageType, ParquetFileReader)): mutable.ListBuffer[Row] = {
+  def retrieveData(input: (MessageType, ParquetFileReader)): Seq[Row] = {
 
     val (schema, reader) = input
-    val groups: mutable.ListBuffer[SimpleGroup] = getParquetGroups(input._1, input._2)
+    val groups: Seq[SimpleGroup] = getParquetGroups(input._1, input._2)
     val result: mutable.ListBuffer[Row] = mutable.ListBuffer.empty[Row]
 
     val schemaTypes = getSchemaTypes(schema)
